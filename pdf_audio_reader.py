@@ -4,6 +4,43 @@ import PyPDF2
 import pyttsx3
 
 
+def extract_text():
+    file = filedialog.askopenfile(parent=root, mode="rb", title="Choose a PDF File")
+    if file is not None:
+        pdfReader = PyPDF2.PdfFileReader(file)
+        global text_extracted
+        text_extracted = ""
+        for pageNumber in range(pdfReader.numPages):
+            pageObject = pdfReader.getPage(pageNumber)
+            text_extracted += pageObject.extract_text()
+
+        file.close()
+
+
+def speak_text():
+    global rate
+    global male
+    global female
+    rate = int(rate.get())
+    engine.setProperty("rate", rate)
+    male = int(male.get())
+    female = int(female.get())
+    all_voices = engine.getProperty("voices")
+    maleVoice = all_voices[0].id
+    femaleVoice = all_voices[1].id
+
+    if (male == 0 and female == 0) or (male == 1 and female == 1):
+        engine.setProperty("voice", maleVoice)
+    elif male == 0 and female == 1:
+        engine.setProperty("voice", femaleVoice)
+    else:
+        engine.setProperty("voice", maleVoice)
+
+    engine.say(text_extracted)
+    engine.runAndWait()
+
+def stop_speaking():
+    engine.stop()
 
 def Application(root: Tk):
     root.geometry("{}x{}".format(700, 600))  # 700 X 600 window size
@@ -56,3 +93,10 @@ def Application(root: Tk):
     stopBtn.grid(row=4, column=1, pady=65)
 
 
+if __name__ == "__main__":
+    mytext, rate, male, female = "", 100, 0, 0
+
+    engine = pyttsx3.init()
+    root = Tk()
+    Application(root)
+    root.mainloop()
